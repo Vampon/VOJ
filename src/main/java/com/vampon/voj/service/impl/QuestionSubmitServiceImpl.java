@@ -4,9 +4,11 @@ import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.errorprone.annotations.concurrent.LazyInit;
 import com.vampon.voj.common.ErrorCode;
 import com.vampon.voj.constant.CommonConstant;
 import com.vampon.voj.exception.BusinessException;
+import com.vampon.voj.judge.JudgeService;
 import com.vampon.voj.model.dto.question.QuestionQueryRequest;
 import com.vampon.voj.model.dto.questionsubmit.QuestionSubmitAddRequest;
 import com.vampon.voj.model.dto.questionsubmit.QuestionSubmitQueryRequest;
@@ -29,6 +31,7 @@ import io.lettuce.core.ScriptOutputType;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.aop.framework.AopContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -52,6 +56,10 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
 
     @Resource
     private UserService userService;
+
+    @Resource
+    @Lazy  //judgeService和QuestionSubmitService存在循环依赖
+    private JudgeService judgeService;
 
     /**
      * 提交题目
@@ -95,8 +103,12 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         if(!save){
             throw new BusinessException(ErrorCode.SYSTEM_ERROR,"数据插入失败");
         }
-
-        return questionSubmit.getId();
+        // 判题服务(异步调用)
+        Long questionSubmitId = questionSubmit.getId();
+        CompletableFuture.runAsync(()->{
+            judgeService.doJudge(questionSubmitId);
+        });
+        return questionSubmitId;
     }
 
     /**
