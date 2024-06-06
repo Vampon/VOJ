@@ -72,6 +72,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
     public long doQuestionSubmit(QuestionSubmitAddRequest questionSubmitAddRequest, User loginUser) {
         // 校验编程语言是否合理
         String language = questionSubmitAddRequest.getCodeLanguage();
+        System.out.println("========================" + questionSubmitAddRequest);
         QuestionSubmitLanguageEnum languageValue = QuestionSubmitLanguageEnum.getEnumByValue(language);
         if(languageValue==null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"编程语言不支持");

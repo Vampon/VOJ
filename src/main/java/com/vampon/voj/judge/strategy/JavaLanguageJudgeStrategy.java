@@ -8,6 +8,7 @@ import com.vampon.voj.model.entity.Question;
 import com.vampon.voj.model.enums.JudgeInfoMessageEnum;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Java程序判题策略
@@ -26,8 +27,9 @@ public class JavaLanguageJudgeStrategy implements JudgeStrategy {
         List<JudgeCase> judgeCaseList = judgeContext.getJudgeCaseList();
         Question question = judgeContext.getQuestion();
         Long time = judgeInfo.getTime();
-        Long memory = judgeInfo.getMemory();
-
+        // Long memory = judgeInfo.getMemory();
+        // 由于在代码沙箱中目前没有实现统计空间利用情况，因此返回的是个空值，这里为了避免后续报错，先指定一个默认值为0
+        Long memory = Optional.ofNullable(judgeInfo.getMemory()).orElse(0L);
         // 根据执行结果，设置题目的判题状态和信息
         JudgeInfoMessageEnum judgeInfoMessageEnum = JudgeInfoMessageEnum.WAITING;
         JudgeInfo judgeInfoResponse = new JudgeInfo();

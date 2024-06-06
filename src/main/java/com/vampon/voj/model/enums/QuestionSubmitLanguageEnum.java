@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  */
 public enum QuestionSubmitLanguageEnum {
 
-    JAVA("Java", "Java"),
+    JAVA("java", "java"),
     C("c", "c"),
     GOLANG("golang", "golang");
 
